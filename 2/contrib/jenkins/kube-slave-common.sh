@@ -24,8 +24,8 @@ JNLP_PORT=${!T_PORT}
 
 export JNLP_PORT=${JNLP_PORT:-50000}
 
-NODEJS_SLAVE=${NODEJS_SLAVE_IMAGE:-registry.access.redhat.com/openshift3/jenkins-agent-nodejs-8-rhel7:${JENKINS_SLAVE_IMAGE_TAG}}
-MAVEN_SLAVE=${MAVEN_SLAVE_IMAGE:-registry.access.redhat.com/openshift3/jenkins-agent-maven-35-rhel7:${JENKINS_SLAVE_IMAGE_TAG}}
+NODEJS_SLAVE=${NODEJS_SLAVE_IMAGE:-registry.redhat.io/openshift3/jenkins-agent-nodejs-8-rhel7:${JENKINS_SLAVE_IMAGE_TAG}}
+MAVEN_SLAVE=${MAVEN_SLAVE_IMAGE:-registry.redhat.io/openshift3/jenkins-agent-maven-35-rhel7:${JENKINS_SLAVE_IMAGE_TAG}}
 # if the master is running the centos image, use the centos slave images.
 if [[ `grep CentOS /etc/redhat-release` ]]; then
   NODEJS_SLAVE=${NODEJS_SLAVE_IMAGE:-openshift/jenkins-agent-nodejs-8-centos7:${JENKINS_SLAVE_IMAGE_TAG}}
@@ -146,12 +146,13 @@ function generate_kubernetes_config() {
       </templates>
       <serverUrl>https://${KUBERNETES_SERVICE_HOST}:${KUBERNETES_SERVICE_PORT}</serverUrl>
       <skipTlsVerify>false</skipTlsVerify>
+      <addMasterProxyEnvVars>true</addMasterProxyEnvVars>
       <serverCertificate>${crt_contents}</serverCertificate>
       <namespace>${PROJECT_NAME}</namespace>
       <jenkinsUrl>http://${JENKINS_SERVICE_HOST}:${JENKINS_SERVICE_PORT}</jenkinsUrl>
       <jenkinsTunnel>${JNLP_HOST}:${JNLP_PORT}</jenkinsTunnel>
       <credentialsId>1a12dfa4-7fc5-47a7-aa17-cc56572a41c7</credentialsId>
-      <containerCap>10</containerCap>
+      <containerCap>100</containerCap>
       <retentionTimeout>5</retentionTimeout>
     </org.csanchez.jenkins.plugins.kubernetes.KubernetesCloud>
     "
