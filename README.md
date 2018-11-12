@@ -6,13 +6,17 @@ use with [OpenShift v3](https://github.com/openshift/origin)
 
 For an example of how to use it, [see this sample.](https://github.com/openshift/origin/blob/master/examples/jenkins/README.md)
 
-The images are pushed to DockerHub as openshift/jenkins-2-centos7, openshift/jenkins-slave-base-centos7, openshift/jenkins-slave-maven-centos7, openshift/jenkins-slave-nodejs-centos7, openshift/jenkins-agent-35-centos7, and openshift/jenkins-agent-nodejs-8-centos7.
+The images are pushed to DockerHub as openshift/jenkins-2-centos7, openshift/jenkins-slave-base-centos7, openshift/jenkins-agent-maven-35-centos7, and openshift/jenkins-agent-nodejs-8-centos7.
 
 The slave-maven and slave-nodejs for both centos7 and rhel7  are being deprecated as part of v3.10 of OpenShift.
-Additionally, development of these images will cease as of v3.10.
+Additionally, development of these images will cease as of v3.10.  And they are removed from this repository as
+part of the v4.0 development cycle.
+
+Support for the [OpenShift Pipeline Plugin](https://github.com/openshift/jenkins-plugin) stopped with v3.11 of OpenShift.
+The plugin itself and any samples around it are removed as part of v4.0.
 
 For more information about using these images with OpenShift, please see the
-official [OpenShift Documentation](https://docs.openshift.org/latest/using_images/other_images/jenkins.html).
+official [OpenShift Documentation](https://docs.okd.io/latest/using_images/other_images/jenkins.html).
 
 Versions
 ---------------------------------
@@ -35,8 +39,6 @@ Choose either the CentOS7 or RHEL7 based image:
     You can access these images from the Red Hat Container Catalog. See:
     * https://access.redhat.com/containers/#/registry.access.redhat.com/openshift3/jenkins-2-rhel7
     * https://access.redhat.com/containers/#/registry.access.redhat.com/openshift3/jenkins-slave-base-rhel7
-    * https://access.redhat.com/containers/#/registry.access.redhat.com/openshift3/jenkins-slave-maven-rhel7
-    * https://access.redhat.com/containers/#/registry.access.redhat.com/openshift3/jenkins-slave-nodejs-rhel7
     * https://access.redhat.com/containers/#/registry.access.redhat.com/openshift3/jenkins-agent-maven-35-rhel7
     * https://access.redhat.com/containers/#/registry.access.redhat.com/openshift3/jenkins-agent-nodejs-8-rhel7
 
@@ -91,15 +93,16 @@ initialization by passing `-e VAR=VALUE` to the Docker run command.
 |    Variable name          |    Description                              |
 | :------------------------ | -----------------------------------------   |
 |  `JENKINS_PASSWORD`       | Password for the 'admin' account when using default Jenkins authentication.            |
-| `OPENSHIFT_ENABLE_OAUTH` | Determines whether the OpenShift Login plugin manages authentication when logging into Jenkins. |
+| `OPENSHIFT_ENABLE_OAUTH`  | Determines whether the OpenShift Login plugin manages authentication when logging into Jenkins. |
 | `OPENSHIFT_PERMISSIONS_POLL_INTERVAL` | Specifies in milliseconds how often the OpenShift Login plugin polls OpenShift for the permissions associated with each user defined in Jenkins. |
 | `INSTALL_PLUGINS`         | Comma-separated list of additional plugins to install on startup. The format of each plugin spec is `plugin-id:version` (as in plugins.txt) |
-|  `OVERRIDE_PV_CONFIG_WITH_IMAGE_CONFIG`       | When running this image with an OpenShift persistent volume for the Jenkins config directory, the transfer of configuration from the image to the persistent volume is only done the first startup of the image as the persistent volume is assigned by the persistent volume claim creation. If you create a custom image that extends this image and updates configuration in the custom image after the initial startup, by default it will not be copied over, unless you set this environment variable to some non-empty value. |
-|  `OVERRIDE_PV_PLUGINS_WITH_IMAGE_PLUGINS`       | When running this image with an OpenShift persistent volume for the Jenkins config directory, the transfer of plugins from the image to the persistent volume is only done the first startup of the image as the persistent volume is assigned by the persistent volume claim creation. If you create a custom image that extends this image and updates plugins in the custom image after the initial startup, by default they will not be copied over, unless you set this environment variable to some non-empty value. |
-|  `OVERRIDE_RELEASE_MIGRATION_OVERWRITE`       | When running this image with an OpenShift persistent volume for the Jenkins config directory, and this image is starting in an existing deployment created with an earlier version of this image, unless the environment variable is set to some non-empty value, the plugins from the image will replace any versions of those plugins currently residing in the Jenkins plugin directory.  |
-|  `SKIP_NO_PROXY_DEFAULT`       | This environment variable applies to the agent/slave images produced by this repository.  By default, the agent/slave images will create/update the 'no_proxy' environment variable with the hostnames for the Jenkins server endpoint and Jenkins JNLP endpoint, as communication flows to endpoints typically should *NOT* go through a HTTP Proxy.  However, if your use case dictates those flows should not be exempt from the proxy, set this environment variable to any non-empty value.    |
+|  `OVERRIDE_PV_CONFIG_WITH_IMAGE_CONFIG`       | When running this image with an OpenShift persistent volume for the Jenkins config directory, the transfer of configuration from the image to the persistent volume is only done the first startup of the image as the persistent volume is assigned by the persistent volume claim creation. If you create a custom image that extends this image and updates configuration in the custom image after the initial startup, by default it will not be copied over, unless you set this environment variable to some non-empty value other than 'false'. |
+|  `OVERRIDE_PV_PLUGINS_WITH_IMAGE_PLUGINS`       | When running this image with an OpenShift persistent volume for the Jenkins config directory, the transfer of plugins from the image to the persistent volume is only done the first startup of the image as the persistent volume is assigned by the persistent volume claim creation. If you create a custom image that extends this image and updates plugins in the custom image after the initial startup, by default they will not be copied over, unless you set this environment variable to some non-empty value other than 'false'. |
+|  `OVERRIDE_RELEASE_MIGRATION_OVERWRITE`       | When running this image with an OpenShift persistent volume for the Jenkins config directory, and this image is starting in an existing deployment created with an earlier version of this image, unless the environment variable is set to some non-empty value other than 'false', the plugins from the image will replace any versions of those plugins currently residing in the Jenkins plugin directory.  |
+|  `SKIP_NO_PROXY_DEFAULT`       | This environment variable applies to the agent/slave images produced by this repository.  By default, the agent/slave images will create/update the 'no_proxy' environment variable with the hostnames for the Jenkins server endpoint and Jenkins JNLP endpoint, as communication flows to endpoints typically should *NOT* go through a HTTP Proxy.  However, if your use case dictates those flows should not be exempt from the proxy, set this environment variable to any non-empty value other than 'false'.    |
 |  `ENABLE_FATAL_ERROR_LOG_FILE`       | When running this image with an OpenShift persistent volume claim for the Jenkins config directory, this environment variable allows the fatal error log file to persist if a fatal error occurs. The fatal error file will be located at `/var/lib/jenkins/logs`.   |
-
+|  `NODEJS_SLAVE_IMAGE`  | Setting this value will override the image used for the default NodeJS agent pod configuration.  The default NodeJS agent pod uses `docker.io/openshift/jenkins-agent-nodejs-8-centos7` or `registry.redhat.io/openshift3/jenkins-agent-nodejs-8-rhel7` depending whether you are running the centos or rhel version of the Jenkins image.  This variable must be set before Jenkins starts the first time for it to have an effect.  |
+|  `MAVEN_SLAVE_IMAGE`   | Setting this value overrides the image used for the default maven agent pod configuration.  The default maven agent pod uses `docker.io/openshift/jenkins-agent-maven-35-centos7` or `registry.redhat.io/openshift3/jenkins-agent-maven-35-rhel7` depending whether you are running the centos or rhel version of the Jenkins image.  This variable must be set before Jenkins starts the first time for it to have an effect.
 
 
 
@@ -277,9 +280,6 @@ INSTALL_PLUGINS=groovy:1.30,ghprb:1.35.0
 ### Plugins focused on integration with OpenShift
 
 A subset of the plugins included by the images of this repository play a direct part in integrating between Jenkins and OpenShift.
-
-* **OpenShift Pipeline Plugin**
-Visit [the upstream repository](https://github.com/openshift/jenkins-plugin), which demonstrates example usage of the plugin's capabilities with the [OpenShift Sample Job](https://github.com/openshift/jenkins/tree/master/1/contrib/openshift/configuration/jobs/OpenShift%20Sample) included in this image. For more details visit the Jenkins [plugin](https://wiki.jenkins-ci.org/display/JENKINS/OpenShift+Pipeline+Plugin) website.  Future development of this plugin is being deprioritized in favor of the **OpenShift Client Plugin** detailed below.  But this plugin is still supported for existing users who have yet to finish migrating to **OpenShift Client Plugin**.  It also serves as an option if the use of the `oc` binary from your Jenkins jobs is not viable for some reason (we are actually curious if such use cases in fact exist), as it interacts with OpenShift via HTTP REST.  Remember though only a subset of the functionality provided by `oc` is available from this plugin.
 
 * **OpenShift Client Plugin**
 Visit [the upstream repository](https://github.com/openshift/jenkins-client-plugin) as well as the [Jenkins plugin wiki](https://wiki.jenkins-ci.org/display/JENKINS/OpenShift+Client+Plugin).  With the lessons learned from OpenShift Pipeline Plugin, as well as adjustments to the rapid evolutions of both Jenkins and OpenShift, this plugin, with its fluent styled syntax and use of the `oc` binary (exposing all the capabilities of that command), is the preferred choice for interacting with OpenShift via either Jenkins Pipeline or Freestyle jobs.
