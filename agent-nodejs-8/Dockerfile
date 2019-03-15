@@ -1,4 +1,4 @@
-FROM openshift/jenkins-slave-base-centos7
+FROM quay.io/openshift/origin-jenkins-agent-base:v4.0
 
 MAINTAINER Gabe Montero <gmontero@redhat.com>
 
@@ -10,6 +10,7 @@ ENV NODEJS_VERSION=8 \
     PROMPT_COMMAND=". /usr/local/bin/scl_enable"
 
 COPY contrib/bin/scl_enable /usr/local/bin/scl_enable
+COPY contrib/bin/configure-agent /usr/local/bin/configure-agent
 
 # Install NodeJS
 RUN yum install -y centos-release-scl-rh && \
